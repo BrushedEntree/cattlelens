@@ -148,6 +148,106 @@ class BreedRecognitionTester:
             self.log_test("Breed Recognition - Valid Image", False, str(e))
             return False
 
+    def test_enhanced_breed_features(self):
+        """Test enhanced breed recognition features with response structure validation"""
+        try:
+            test_image = self.create_test_image_base64()
+            
+            response = requests.post(
+                f"{self.api_url}/recognize-breed",
+                json={"image_base64": test_image},
+                timeout=60
+            )
+            
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                
+                # Check required response fields exist
+                required_fields = ['success', 'breed', 'animal_type', 'confidence', 'breed_info', 'image_quality']
+                missing_fields = [field for field in required_fields if field not in data]
+                
+                if missing_fields:
+                    success = False
+                    details += f", Missing fields: {missing_fields}"
+                else:
+                    details += ", All required fields present"
+                    
+                    # Check breed_info structure if present
+                    if data.get('breed_info'):
+                        breed_info = data['breed_info']
+                        breed_fields = ['name', 'origin', 'utility', 'traits', 'color', 'horn_shape', 'size']
+                        missing_breed_fields = [field for field in breed_fields if field not in breed_info]
+                        
+                        if missing_breed_fields:
+                            details += f", Missing breed_info fields: {missing_breed_fields}"
+                        else:
+                            details += ", Complete breed_info structure"
+                    
+                    # Check for image_quality field
+                    if 'image_quality' in data:
+                        details += f", Image quality: {data.get('image_quality')}"
+                    
+                    # Check for alternative_breeds field
+                    if 'alternative_breeds' in data:
+                        alt_breeds = data.get('alternative_breeds')
+                        if alt_breeds:
+                            details += f", Alternative breeds: {len(alt_breeds)} suggestions"
+                        else:
+                            details += ", No alternative breeds"
+            
+            self.log_test("Enhanced Breed Features", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Enhanced Breed Features", False, str(e))
+            return False
+
+    def test_breeds_database_content(self):
+        """Test detailed breeds database content and structure"""
+        try:
+            response = requests.get(f"{self.api_url}/breeds", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                data = response.json()
+                cattle_breeds = data.get('cattle', [])
+                buffalo_breeds = data.get('buffalo', [])
+                
+                # Verify counts
+                cattle_count = len(cattle_breeds)
+                buffalo_count = len(buffalo_breeds)
+                details += f", Cattle: {cattle_count}, Buffalo: {buffalo_count}"
+                
+                # Check if we have the expected counts
+                if cattle_count != 15 or buffalo_count != 6:
+                    success = False
+                    details += f" - Expected 15 cattle and 6 buffalo breeds"
+                else:
+                    # Check breed structure
+                    if cattle_breeds:
+                        sample_breed = cattle_breeds[0]
+                        required_breed_fields = ['name', 'origin', 'utility', 'traits', 'color', 'horn_shape', 'size']
+                        missing_fields = [field for field in required_breed_fields if field not in sample_breed]
+                        
+                        if missing_fields:
+                            success = False
+                            details += f", Missing breed fields: {missing_fields}"
+                        else:
+                            details += ", Complete breed structure with enhanced fields"
+                            
+                            # Check for specific enhanced fields
+                            if 'horn_shape' in sample_breed and 'size' in sample_breed:
+                                details += " (horn_shape and size fields confirmed)"
+            
+            self.log_test("Breeds Database Content", success, details)
+            return success
+        except Exception as e:
+            self.log_test("Breeds Database Content", False, str(e))
+            return False
+
     def test_breed_recognition_missing_fields(self):
         """Test breed recognition with missing required fields"""
         try:
