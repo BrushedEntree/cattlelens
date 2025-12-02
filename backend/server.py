@@ -267,7 +267,7 @@ async def root():
 @api_router.post("/recognize-breed", response_model=BreedRecognitionResponse)
 async def recognize_breed(request: BreedRecognitionRequest):
     """
-    Recognize cattle or buffalo breed from an image using Gemini AI
+    Recognize cattle or buffalo breed from an image using Gemini AI with enhanced identification
     """
     try:
         # Get API key from environment
@@ -278,23 +278,46 @@ async def recognize_breed(request: BreedRecognitionRequest):
         # Create a unique session ID for this request
         session_id = str(uuid.uuid4())
         
-        # Prepare the system message with breed database knowledge
+        # Build detailed breed characteristics for AI
+        breed_details = []
+        for animal_type, breeds in BREED_DATABASE.items():
+            for breed_key, info in breeds.items():
+                breed_details.append(
+                    f"{info['name']} ({animal_type}): {info['color']}, "
+                    f"{info.get('horn_shape', 'N/A')} horns, {info.get('size', 'medium')} size, "
+                    f"Key traits: {info['traits']}"
+                )
+        
+        # Prepare enhanced system message with detailed breed characteristics
         system_message = f"""
-You are an expert livestock veterinarian specializing in Indian cattle and buffalo breeds.
-Your task is to analyze images and identify the breed accurately.
+You are an expert livestock veterinarian specializing in Indian cattle and buffalo breeds with deep knowledge of breed identification.
 
-You have knowledge of these Indian breeds:
-CATTLE: {', '.join(BREED_DATABASE['cattle'].keys())}
-BUFFALO: {', '.join(BREED_DATABASE['buffalo'].keys())}
+IDENTIFICATION GUIDELINES:
+1. First assess IMAGE QUALITY - Is the animal clearly visible? Is lighting adequate? Rate as Good/Fair/Poor
+2. Identify if it's CATTLE or BUFFALO based on body structure, horn shape, and facial features
+3. Look for KEY IDENTIFICATION FEATURES:
+   - COAT COLOR: Red, white, grey, black, brown, copper, silver
+   - HORN SHAPE: Lyre-shaped, curved, straight, coiled, sickle-shaped, long/short
+   - BODY SIZE: Large, medium, small
+   - DISTINCTIVE FEATURES: Forehead bulge, pendulous ears, dewlap, hump, body build
+   
+BREED DATABASE WITH IDENTIFICATION FEATURES:
+{chr(10).join(breed_details)}
 
-Provide your response in this exact format:
+RESPONSE FORMAT (MANDATORY):
+Image Quality: [Good/Fair/Poor with brief explanation]
 Animal Type: [cattle or buffalo]
-Breed: [exact breed name from the database]
+Primary Breed: [exact breed name]
 Confidence: [High/Medium/Low]
-Reasoning: [brief explanation of identifying features]
+Reasoning: [specific visible features that led to identification - mention color, horn shape, size, distinctive traits]
+Alternative Possibilities: [If confidence is not High, list 2-3 other possible breeds with brief reasoning]
 
-If it's a cross-breed, mention the possible parent breeds.
-If the image quality is poor or the animal is not clearly visible, state that.
+IMPORTANT:
+- If confidence is not High, you MUST provide alternative breed possibilities
+- Be specific about visible features in your reasoning
+- If image quality is poor, state it clearly and explain impact on identification
+- For cross-breeds, mention possible parent breeds
+- If the animal is not clearly visible or not cattle/buffalo, state so clearly
 """
         
         # Initialize Gemini chat
@@ -312,47 +335,84 @@ If the image quality is poor or the animal is not clearly visible, state that.
         
         # Create user message with image
         user_message = UserMessage(
-            text="Please analyze this image and identify the breed of this animal. Provide the animal type, breed name, confidence level, and key identifying features.",
+            text="Analyze this image carefully and identify the breed. Follow the response format exactly and provide alternative breeds if your confidence is not High.",
             file_contents=[image_content]
         )
         
         # Send message and get response
         logger.info(f"Sending breed recognition request for session {session_id}")
         response_text = await chat.send_message(user_message)
-        logger.info(f"Received response: {response_text[:200]}...")
+        logger.info(f"Received response: {response_text[:300]}...")
         
         # Parse the response
         animal_type = None
         breed = None
         confidence = None
+        image_quality = "Good"
+        reasoning = ""
+        alternative_text = ""
         
         lines = response_text.split('\n')
         for line in lines:
-            if 'Animal Type:' in line:
-                animal_type = line.split(':')[1].strip().lower()
-            elif 'Breed:' in line:
-                breed = line.split(':')[1].strip()
+            line = line.strip()
+            if 'Image Quality:' in line:
+                image_quality = line.split(':', 1)[1].strip()
+            elif 'Animal Type:' in line:
+                animal_type = line.split(':', 1)[1].strip().lower()
+            elif 'Primary Breed:' in line or 'Breed:' in line:
+                breed = line.split(':', 1)[1].strip()
             elif 'Confidence:' in line:
-                confidence = line.split(':')[1].strip()
+                confidence = line.split(':', 1)[1].strip()
+            elif 'Reasoning:' in line:
+                reasoning = line.split(':', 1)[1].strip()
+            elif 'Alternative Possibilities:' in line or 'Alternative Breeds:' in line:
+                alternative_text = line.split(':', 1)[1].strip()
         
-        # Get breed information from database
+        # Get primary breed information from database
         breed_info = None
         if animal_type and breed:
-            # Try to match breed name (case-insensitive)
             breed_lower = breed.lower()
             if animal_type in BREED_DATABASE:
                 for key, info in BREED_DATABASE[animal_type].items():
-                    if key in breed_lower or breed_lower in key:
+                    if key in breed_lower or breed_lower in key or key.replace(' ', '') in breed_lower.replace(' ', ''):
                         breed_info = BreedInfo(**info)
-                        breed = info['name']  # Use standardized name
+                        breed = info['name']
                         break
+        
+        # Parse alternative breeds
+        alternative_breeds = []
+        if alternative_text and alternative_text.lower() not in ['none', 'n/a', 'not applicable']:
+            # Try to extract breed names from alternative text
+            alt_parts = alternative_text.split(',')
+            for alt_part in alt_parts[:3]:  # Max 3 alternatives
+                alt_part = alt_part.strip()
+                if alt_part and len(alt_part) > 2:
+                    # Try to find breed in database
+                    alt_breed_info = None
+                    alt_breed_name = None
+                    if animal_type and animal_type in BREED_DATABASE:
+                        for key, info in BREED_DATABASE[animal_type].items():
+                            if key in alt_part.lower() or info['name'].lower() in alt_part.lower():
+                                alt_breed_info = BreedInfo(**info)
+                                alt_breed_name = info['name']
+                                break
+                    
+                    if alt_breed_name:
+                        alternative_breeds.append(BreedSuggestion(
+                            breed=alt_breed_name,
+                            confidence="Low to Medium",
+                            reasoning=alt_part,
+                            breed_info=alt_breed_info
+                        ))
         
         return BreedRecognitionResponse(
             success=True,
             breed=breed or "Unknown",
             animal_type=animal_type or "unknown",
             confidence=confidence or "Medium",
-            breed_info=breed_info
+            breed_info=breed_info,
+            alternative_breeds=alternative_breeds if alternative_breeds else None,
+            image_quality=image_quality
         )
         
     except Exception as e:
