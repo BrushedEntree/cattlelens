@@ -241,6 +241,14 @@ class BreedInfo(BaseModel):
     utility: str
     traits: str
     color: str
+    horn_shape: Optional[str] = None
+    size: Optional[str] = None
+
+class BreedSuggestion(BaseModel):
+    breed: str
+    confidence: str
+    reasoning: str
+    breed_info: Optional[BreedInfo] = None
 
 class BreedRecognitionResponse(BaseModel):
     success: bool
@@ -248,6 +256,8 @@ class BreedRecognitionResponse(BaseModel):
     animal_type: Optional[str] = None
     confidence: Optional[str] = None
     breed_info: Optional[BreedInfo] = None
+    alternative_breeds: Optional[List[BreedSuggestion]] = None
+    image_quality: Optional[str] = None
     error: Optional[str] = None
 
 @api_router.get("/")
