@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '@/App.css';
 import axios from 'axios';
-import { Upload, Loader2, Info, MapPin, Beef, Sparkles } from 'lucide-react';
+import { Upload, Loader2, Info, MapPin, Beef, Sparkles, Award, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -109,16 +109,11 @@ function App() {
               <div className="logo-icon">
                 <Beef className="w-6 h-6" />
               </div>
-              <h1 className="logo-text">Breed Scanner</h1>
+              <h1 className="logo-text">CattleLens</h1>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-stone-600 hover:text-primary"
-              data-testid="info-button"
-            >
-              <Info className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium" style={{color: '#8B4513'}}>Powered by Gemini AI</span>
+            </div>
           </div>
         </div>
       </header>
@@ -129,10 +124,10 @@ function App() {
         <div className="container-wrapper hero-content">
           <div className="text-center mb-8">
             <h2 className="hero-title">
-              AI-Powered Breed Recognition
+              Indian Cattle & Buffalo Breed Identification
             </h2>
             <p className="hero-subtitle">
-              Upload an image of cattle or buffalo to identify the breed instantly
+              Advanced AI-powered breed recognition for Indian livestock breeds. Upload an image to identify cattle or buffalo breeds with detailed information.
             </p>
           </div>
 
@@ -221,17 +216,26 @@ function App() {
       {result && result.success && (
         <section className="results-section">
           <div className="container-wrapper">
+            {/* Image Quality Banner */}
+            {result.image_quality && (
+              <div className="image-quality-banner">
+                <Eye className="inline-block w-5 h-5 mr-2" />
+                Image Quality: {result.image_quality}
+              </div>
+            )}
+
             <div className="results-grid">
               {/* Breed Card */}
               <Card className="breed-card" data-testid="breed-result-card">
                 <div className="breed-header">
                   <h3 className="breed-name" data-testid="breed-name">{result.breed}</h3>
                   <div className="confidence-badge" data-testid="confidence-badge">
+                    <Award className="inline-block w-4 h-4 mr-1" />
                     {result.confidence} Confidence
                   </div>
                 </div>
                 <div className="breed-type" data-testid="animal-type">
-                  {result.animal_type === 'cattle' ? 'Cattle' : 'Buffalo'}
+                  {result.animal_type === 'cattle' ? 'Cattle Breed' : 'Buffalo Breed'}
                 </div>
               </Card>
 
@@ -268,10 +272,50 @@ function App() {
                         <p className="detail-value" data-testid="breed-color">{result.breed_info.color}</p>
                       </div>
                     </div>
+                    {result.breed_info.horn_shape && (
+                      <div className="detail-item">
+                        <Award className="detail-icon" />
+                        <div>
+                          <p className="detail-label">Horn Shape</p>
+                          <p className="detail-value">{result.breed_info.horn_shape}</p>
+                        </div>
+                      </div>
+                    )}
+                    {result.breed_info.size && (
+                      <div className="detail-item">
+                        <Info className="detail-icon" />
+                        <div>
+                          <p className="detail-label">Size</p>
+                          <p className="detail-value">{result.breed_info.size}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </Card>
               )}
             </div>
+
+            {/* Alternative Breeds Section */}
+            {result.alternative_breeds && result.alternative_breeds.length > 0 && (
+              <div className="alternatives-section">
+                <h3 className="alternatives-title">Alternative Breed Possibilities</h3>
+                <div className="alternatives-grid">
+                  {result.alternative_breeds.map((alt, index) => (
+                    <Card key={index} className="alternative-card">
+                      <h4 className="alternative-breed-name">{alt.breed}</h4>
+                      <span className="alternative-confidence">{alt.confidence}</span>
+                      <p className="alternative-reasoning">{alt.reasoning}</p>
+                      {alt.breed_info && (
+                        <div className="text-sm" style={{color: '#8D6E63'}}>
+                          <p><strong>Origin:</strong> {alt.breed_info.origin}</p>
+                          <p><strong>Utility:</strong> {alt.breed_info.utility}</p>
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -280,7 +324,7 @@ function App() {
       <footer className="footer">
         <div className="container-wrapper">
           <p className="footer-text">
-            Powered by Gemini AI • Designed for Field Level Workers
+            Powered by Gemini 2.5 Flash AI • Supporting Indian Livestock Conservation
           </p>
         </div>
       </footer>
@@ -295,8 +339,13 @@ function getColorCode(colorName) {
     'white': '#F3F4F6',
     'black': '#1F2937',
     'grey': '#9CA3AF',
+    'gray': '#9CA3AF',
     'brown': '#92400E',
-    'copper': '#B45309'
+    'copper': '#B45309',
+    'silver': '#C0C0C0',
+    'reddish': '#DC2626',
+    'dun': '#C19A6B',
+    'rusty': '#B7410E'
   };
   
   const lowerColor = colorName.toLowerCase();
@@ -305,7 +354,7 @@ function getColorCode(colorName) {
       return value;
     }
   }
-  return '#6B7280';
+  return '#8D6E63';
 }
 
 export default App;
