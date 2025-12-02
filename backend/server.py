@@ -349,7 +349,6 @@ IMPORTANT:
         breed = None
         confidence = None
         image_quality = "Good"
-        reasoning = ""
         alternative_text = ""
         
         lines = response_text.split('\n')
@@ -363,8 +362,6 @@ IMPORTANT:
                 breed = line.split(':', 1)[1].strip()
             elif 'Confidence:' in line:
                 confidence = line.split(':', 1)[1].strip()
-            elif 'Reasoning:' in line:
-                reasoning = line.split(':', 1)[1].strip()
             elif 'Alternative Possibilities:' in line or 'Alternative Breeds:' in line:
                 alternative_text = line.split(':', 1)[1].strip()
         
