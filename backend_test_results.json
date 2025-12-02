@@ -1,9 +1,9 @@
 {
-  "timestamp": "2025-12-02T16:24:43.084022",
+  "timestamp": "2025-12-02T16:25:27.534676",
   "summary": {
-    "passed": 5,
-    "total": 6,
-    "success_rate": 0.8333333333333334
+    "passed": 7,
+    "total": 8,
+    "success_rate": 0.875
   },
   "tests": [
     {
@@ -15,6 +15,11 @@
       "test": "Breeds Endpoint",
       "success": true,
       "details": "Status: 200, Cattle breeds: 15, Buffalo breeds: 6"
+    },
+    {
+      "test": "Breeds Database Content",
+      "success": true,
+      "details": "Status: 200, Cattle: 15, Buffalo: 6, Complete breed structure with enhanced fields (horn_shape and size fields confirmed)"
     },
     {
       "test": "CORS Headers",
@@ -35,6 +40,11 @@
       "test": "Breed Recognition - Valid Image",
       "success": true,
       "details": "Status: 200, Success: False, Error: Failed to generate chat completion: litellm.BadRequestError: OpenAIException - litellm.BadRequestError: GeminiException BadRequestError - {\n  \"error\": {\n    \"code\": 400,\n    \"message\": \"Unable to process input image. Please retry or report in https://developers.generativeai.google/guide/troubleshooting\",\n    \"status\": \"INVALID_ARGUMENT\"\n  }\n}\n. Received Model Group=gemini/gemini-2.5-flash\nAvailable Model Group Fallbacks=None"
+    },
+    {
+      "test": "Enhanced Breed Features",
+      "success": true,
+      "details": "Status: 200, All required fields present, Image quality: None, No alternative breeds"
     }
   ]
 }
