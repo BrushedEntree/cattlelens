@@ -33,115 +33,199 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Indian cattle and buffalo breeds database
+# Indian cattle and buffalo breeds database with detailed identification features
 BREED_DATABASE = {
     "cattle": {
         "gir": {
             "name": "Gir",
             "origin": "Gujarat, India",
-            "utility": "Milk production (10-12 liters/day)",
-            "traits": "Distinctive forehead bulge, long pendulous ears",
-            "color": "Red and white or sometimes black and white"
+            "utility": "Milch - High milk yield (1400-2500 kg/lactation)",
+            "traits": "Distinctive convex forehead bulge, large pendulous ears, lyre-shaped horns",
+            "color": "Reddish-brown to white, sometimes with white patches",
+            "horn_shape": "Lyre-shaped, curved backward and upward",
+            "size": "Medium to large"
         },
         "sahiwal": {
             "name": "Sahiwal",
-            "origin": "Punjab, Pakistan/India",
-            "utility": "High milk yield (8-10 liters/day)",
-            "traits": "Loose skin, drooping ears, reddish dun color",
-            "color": "Reddish dun to red"
+            "origin": "Punjab, India/Pakistan",
+            "utility": "Milch - High milk yield (1400-2500 kg/lactation)",
+            "traits": "Loose skin with prominent dewlap, drooping ears, lyre-shaped horns",
+            "color": "Reddish dun to pale red",
+            "horn_shape": "Lyre-shaped, medium length",
+            "size": "Medium"
         },
         "red sindhi": {
             "name": "Red Sindhi",
-            "origin": "Sindh, Pakistan",
-            "utility": "Dual purpose - milk and draught",
-            "traits": "Compact body, red color, heat tolerant",
-            "color": "Red"
+            "origin": "Sindh, Pakistan (now in Indian farms)",
+            "utility": "Milch - High milk fat and protein content",
+            "traits": "Compact body, heat tolerant, red coat, medium build",
+            "color": "Reddish to red",
+            "horn_shape": "Short, thick horns",
+            "size": "Medium"
         },
         "tharparkar": {
             "name": "Tharparkar",
-            "origin": "Rajasthan, India",
-            "utility": "Dual purpose - milk and draught",
-            "traits": "White or light grey, medium-sized",
-            "color": "White to light grey"
+            "origin": "Rajasthan (Thar Desert), India",
+            "utility": "Dual purpose - Milk (1800-2600 kg/lactation) and draught",
+            "traits": "Lyre-shaped horns, medium to large body, adapted to arid climate",
+            "color": "White to light grey",
+            "horn_shape": "Lyre-shaped, medium length",
+            "size": "Medium to large"
         },
         "rathi": {
             "name": "Rathi",
             "origin": "Rajasthan, India",
-            "utility": "Dual purpose breed",
-            "traits": "Medium-sized, adapted to arid conditions",
-            "color": "White with black or brown patches"
+            "utility": "Milch - Disease resistant, high milk fat",
+            "traits": "Medium-sized, adapted to arid conditions, good body conformation",
+            "color": "Reddish coat",
+            "horn_shape": "Short to medium",
+            "size": "Medium"
         },
         "kankrej": {
             "name": "Kankrej",
-            "origin": "Gujarat, India",
-            "utility": "Draught and milk production",
-            "traits": "Large, powerful, lyrate horns",
-            "color": "Silver grey to iron grey or steel black"
+            "origin": "Gujarat-Rajasthan border, India",
+            "utility": "Dual purpose - Draught and milk",
+            "traits": "Large powerful body, lyrate horns, strong draught ability",
+            "color": "Silver grey to iron grey or steel black",
+            "horn_shape": "Lyre-shaped, long and curved",
+            "size": "Large"
         },
         "ongole": {
             "name": "Ongole",
             "origin": "Andhra Pradesh, India",
-            "utility": "Draught and beef",
-            "traits": "Large size, white or grey color, prominent hump",
-            "color": "White or light grey"
+            "utility": "Dual purpose - Draught and beef, good milk yield",
+            "traits": "Large size, prominent hump, white coat, strong and sturdy",
+            "color": "White to light grey",
+            "horn_shape": "Short, thick horns",
+            "size": "Large"
         },
         "hariana": {
             "name": "Hariana",
-            "origin": "Haryana, India",
-            "utility": "Dual purpose - milk and draught",
-            "traits": "White or light grey, small horns",
-            "color": "White or light grey"
+            "origin": "Haryana, Uttar Pradesh, India",
+            "utility": "Dual purpose - Milk and draught",
+            "traits": "White to grey coat, medium size, adaptable, good temperament",
+            "color": "White to light grey",
+            "horn_shape": "Small to medium, upward curved",
+            "size": "Medium"
         },
         "kangayam": {
             "name": "Kangayam",
             "origin": "Tamil Nadu, India",
-            "utility": "Draught and beef",
-            "traits": "Red color, compact body, powerful",
-            "color": "Red"
+            "utility": "Draught and beef - powerful work animal",
+            "traits": "Red color, compact powerful body, grey-black hooves",
+            "color": "Red to dark red",
+            "horn_shape": "Medium, curved backward",
+            "size": "Medium"
+        },
+        "malvi": {
+            "name": "Malvi",
+            "origin": "Madhya Pradesh, India",
+            "utility": "Draught - Strong work capacity",
+            "traits": "White to grey coat, large body, strong build",
+            "color": "White to grey",
+            "horn_shape": "Medium, curved",
+            "size": "Large"
+        },
+        "nagori": {
+            "name": "Nagori",
+            "origin": "Rajasthan, India",
+            "utility": "Draught - Fast moving draught breed",
+            "traits": "White coat, large size, long legs, strong",
+            "color": "White",
+            "horn_shape": "Medium to long, curved",
+            "size": "Large"
+        },
+        "red kandhari": {
+            "name": "Red Kandhari",
+            "origin": "Maharashtra, India",
+            "utility": "Milch - Good milk yield",
+            "traits": "Red coat, strong build, good milk producer",
+            "color": "Red",
+            "horn_shape": "Medium, curved",
+            "size": "Medium"
+        },
+        "khillari": {
+            "name": "Khillari",
+            "origin": "Maharashtra-Karnataka border, India",
+            "utility": "Draught - Fast and powerful",
+            "traits": "Grey-white body, black horns, athletic build",
+            "color": "Grey-white",
+            "horn_shape": "Long, sharp, black horns",
+            "size": "Medium to large"
+        },
+        "hallikar": {
+            "name": "Hallikar",
+            "origin": "Karnataka, India",
+            "utility": "Draught - Agricultural work",
+            "traits": "Grey-white body, black horns, active temperament",
+            "color": "Grey-white",
+            "horn_shape": "Long, sharp, black horns",
+            "size": "Medium"
+        },
+        "amrit mahal": {
+            "name": "Amrit Mahal",
+            "origin": "Karnataka, India",
+            "utility": "Draught - Military transport (historical)",
+            "traits": "White coat, strong and active, good endurance",
+            "color": "White to grey",
+            "horn_shape": "Long, sharp horns",
+            "size": "Medium to large"
         }
     },
     "buffalo": {
         "murrah": {
             "name": "Murrah",
-            "origin": "Haryana, India",
-            "utility": "High milk production (12-15 liters/day)",
-            "traits": "Jet black, tightly coiled horns, heavy body",
-            "color": "Jet black"
+            "origin": "Haryana, Punjab, Delhi, India",
+            "utility": "Premier dairy breed - 2000-2500 kg/lactation",
+            "traits": "Jet black coat, tightly coiled horns, massive body, broad hips, well-developed udder",
+            "color": "Jet black, sometimes white markings on face or tail",
+            "horn_shape": "Short, tightly curled/coiled horns",
+            "size": "Large (Bulls 550-600 kg, Females 450-550 kg)"
         },
         "mehsana": {
             "name": "Mehsana",
-            "origin": "Gujarat, India",
-            "utility": "High milk yield",
-            "traits": "Black coat, medium-sized, wall-eyed",
-            "color": "Black"
+            "origin": "Gujarat (Mehsana district), India",
+            "utility": "High milk yield - good dairy buffalo",
+            "traits": "Black coat, medium-sized, wall-eyed appearance, good udder",
+            "color": "Black",
+            "horn_shape": "Medium, curved backward",
+            "size": "Medium"
         },
         "jaffarabadi": {
             "name": "Jaffarabadi",
-            "origin": "Gujarat, India",
-            "utility": "Heavy milk production",
-            "traits": "Massive build, bulging forehead, drooping horns",
-            "color": "Black"
+            "origin": "Gujarat (Coastal, Gulf of Khambhat), India",
+            "utility": "Dual purpose - Milk (1500-2000 kg/lactation) and draught",
+            "traits": "Very large massive body, massive dewlap, bulging forehead, broad semi-circular horns",
+            "color": "Black",
+            "horn_shape": "Thick, curved backward and upward forming semi-circle",
+            "size": "Very large (heaviest Indian buffalo breed)"
         },
         "surti": {
             "name": "Surti",
-            "origin": "Gujarat, India",
-            "utility": "High butterfat content milk",
-            "traits": "Medium-sized, sickle-shaped horns",
-            "color": "Black or brown"
+            "origin": "Gujarat (Kaira and Baroda districts), India",
+            "utility": "Rich milk - High fat content (8-12%), 1000-1300 kg/lactation",
+            "traits": "Medium-sized, sickle-shaped horns, moderately long flat horns",
+            "color": "Silver grey to rusty brown",
+            "horn_shape": "Sickle-shaped, curved like a sickle",
+            "size": "Medium"
         },
         "nagpuri": {
             "name": "Nagpuri",
-            "origin": "Maharashtra, India",
-            "utility": "Dual purpose - milk and draught",
-            "traits": "Copper colored, medium-sized",
-            "color": "Copper to black"
+            "origin": "Maharashtra (Nagpur region), India",
+            "utility": "Dual purpose - Milk and draught",
+            "traits": "Copper colored coat, medium-sized body, good for farm work",
+            "color": "Copper to black",
+            "horn_shape": "Medium, curved",
+            "size": "Medium"
         },
         "banni": {
             "name": "Banni",
-            "origin": "Gujarat, India",
-            "utility": "High milk production in harsh conditions",
-            "traits": "Adapted to arid regions, medium-sized",
-            "color": "Black or grey"
+            "origin": "Gujarat (Banni grasslands, Kutch), India",
+            "utility": "High milk in harsh conditions - Hardy breed",
+            "traits": "Adapted to arid saline regions, medium-sized, good heat tolerance",
+            "color": "Black to grey",
+            "horn_shape": "Medium, curved",
+            "size": "Medium"
         }
     }
 }
