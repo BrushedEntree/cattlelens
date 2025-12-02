@@ -10,7 +10,9 @@ from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
 import base64
-from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+import google.generativeai as genai
+from PIL import Image
+import io
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -271,10 +273,13 @@ async def recognize_breed(request: BreedRecognitionRequest):
     """
     try:
         # Get API key from environment
-        api_key = os.environ.get('EMERGENT_LLM_KEY')
+        api_key = os.environ.get('GOOGLE_API_KEY')
         if not api_key:
             raise HTTPException(status_code=500, detail="API key not configured")
         
+        # Configure Gemini
+        genai.configure(api_key=api_key)
+
         # Create a unique session ID for this request
         session_id = str(uuid.uuid4())
         
@@ -320,28 +325,26 @@ IMPORTANT:
 - If the animal is not clearly visible or not cattle/buffalo, state so clearly
 """
         
-        # Initialize Gemini chat
-        chat = LlmChat(
-            api_key=api_key,
-            session_id=session_id,
-            system_message=system_message
+        # Initialize Gemini model
+        model = genai.GenerativeModel(
+            model_name="gemini-2.5-flash",
+            system_instruction=system_message
         )
         
-        # Use Gemini 2.5 Flash for image analysis
-        chat.with_model("gemini", "gemini-2.5-flash")
-        
-        # Create image content from base64
-        image_content = ImageContent(image_base64=request.image_base64)
-        
-        # Create user message with image
-        user_message = UserMessage(
-            text="Analyze this image carefully and identify the breed. Follow the response format exactly and provide alternative breeds if your confidence is not High.",
-            file_contents=[image_content]
-        )
+        # Process image
+        try:
+            image_data = base64.b64decode(request.image_base64)
+            image = Image.open(io.BytesIO(image_data))
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid image data: {str(e)}")
         
         # Send message and get response
         logger.info(f"Sending breed recognition request for session {session_id}")
-        response_text = await chat.send_message(user_message)
+        
+        prompt = "Analyze this image carefully and identify the breed. Follow the response format exactly and provide alternative breeds if your confidence is not High."
+        
+        response = await model.generate_content_async([prompt, image])
+        response_text = response.text
         logger.info(f"Received response: {response_text[:300]}...")
         
         # Parse the response

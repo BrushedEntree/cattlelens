@@ -30,7 +30,7 @@ function App() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFile(e.dataTransfer.files[0]);
     }
@@ -50,7 +50,7 @@ function App() {
 
     setSelectedImage(file);
     setResult(null);
-    
+
     const reader = new FileReader();
     reader.onload = (e) => {
       setImagePreview(e.target.result);
@@ -70,10 +70,10 @@ function App() {
     try {
       const reader = new FileReader();
       reader.readAsDataURL(selectedImage);
-      
+
       reader.onload = async () => {
         const base64String = reader.result.split(',')[1];
-        
+
         const response = await axios.post(`${API}/recognize-breed`, {
           image_base64: base64String
         });
@@ -112,7 +112,7 @@ function App() {
               <h1 className="logo-text">CattleLens</h1>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium" style={{color: '#8B4513'}}>Powered by Gemini AI</span>
+              <span className="text-sm font-medium" style={{ color: '#8B4513' }}>Powered by VinayKarthik</span>
             </div>
           </div>
         </div>
@@ -266,7 +266,7 @@ function App() {
                       </div>
                     </div>
                     <div className="detail-item">
-                      <div className="color-swatch" style={{backgroundColor: getColorCode(result.breed_info.color)}} />
+                      <div className="color-swatch" style={{ backgroundColor: getColorCode(result.breed_info.color) }} />
                       <div>
                         <p className="detail-label">Color</p>
                         <p className="detail-value" data-testid="breed-color">{result.breed_info.color}</p>
@@ -306,7 +306,7 @@ function App() {
                       <span className="alternative-confidence">{alt.confidence}</span>
                       <p className="alternative-reasoning">{alt.reasoning}</p>
                       {alt.breed_info && (
-                        <div className="text-sm" style={{color: '#8D6E63'}}>
+                        <div className="text-sm" style={{ color: '#8D6E63' }}>
                           <p><strong>Origin:</strong> {alt.breed_info.origin}</p>
                           <p><strong>Utility:</strong> {alt.breed_info.utility}</p>
                         </div>
@@ -324,7 +324,7 @@ function App() {
       <footer className="footer">
         <div className="container-wrapper">
           <p className="footer-text">
-            Powered by Gemini 2.5 Flash AI • Supporting Indian Livestock Conservation
+            Powered by VinayKarthik • Supporting Indian Livestock Conservation
           </p>
         </div>
       </footer>
@@ -347,7 +347,7 @@ function getColorCode(colorName) {
     'dun': '#C19A6B',
     'rusty': '#B7410E'
   };
-  
+
   const lowerColor = colorName.toLowerCase();
   for (const [key, value] of Object.entries(colorMap)) {
     if (lowerColor.includes(key)) {
