@@ -298,10 +298,12 @@ class BreedRecognitionTester:
         tests = [
             self.test_api_health,
             self.test_breeds_endpoint,
+            self.test_breeds_database_content,
             self.test_cors_headers,
             self.test_breed_recognition_missing_fields,
             self.test_breed_recognition_invalid_data,
             self.test_breed_recognition_valid_image,
+            self.test_enhanced_breed_features,
         ]
         
         for test in tests:
